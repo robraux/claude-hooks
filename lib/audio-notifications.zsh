@@ -6,6 +6,7 @@
 play_audio_notification() {
     local notification_type="$1"
     local config="$2"
+    local directory_name="$3"
     
     # Get audio settings
     local sound_file=$(echo "$config" | jq -r '.audio.sound_file')

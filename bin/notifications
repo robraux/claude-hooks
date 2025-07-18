@@ -23,8 +23,8 @@ init_config() {
     fi
     
     # Create visual state directory
-    if [[ ! -d "$config_dir" ]]; then
-        mkdir -p "$config_dir"
+    if [[ ! -d "$config_dir/visual" ]]; then
+        mkdir -p "$config_dir/visual"
     fi
     
     # Copy default config if it doesn't exist
@@ -111,7 +111,7 @@ toggle_notification() {
     
     if [[ $? -eq 0 ]]; then
         echo "$updated_config" > "$CONFIG_FILE"
-        echo "✅ ${type^} notifications ${state}"
+        echo "✅ $(echo "${type:0:1}" | tr '[:lower:]' '[:upper:]')${type:1} notifications ${state}"
     else
         echo "❌ Failed to update ${type} notifications"
         return 1

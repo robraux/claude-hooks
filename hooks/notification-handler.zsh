@@ -36,6 +36,9 @@ fi
 
 CONFIG=$(cat "$CONFIG_FILE")
 
+# Get current working directory name for context
+DIRECTORY_NAME=$(basename "$(pwd)")
+
 # Determine notification type based on message content
 NOTIFICATION_TYPE="info"
 if [[ "$MESSAGE" =~ "permission" ]]; then
@@ -55,17 +58,17 @@ fi
 
 # Check if push notifications are enabled
 if [[ $(echo "$CONFIG" | jq -r '.push.enabled') == "true" ]]; then
-    send_push_notification "$MESSAGE" "$NOTIFICATION_TYPE" "$CONFIG"
+    send_push_notification "$MESSAGE" "$NOTIFICATION_TYPE" "$CONFIG" "$DIRECTORY_NAME"
 fi
 
 # Check if desktop notifications are enabled
 if [[ $(echo "$CONFIG" | jq -r '.desktop.enabled') == "true" ]]; then
-    send_desktop_notification "$MESSAGE" "$NOTIFICATION_TYPE" "$CONFIG"
+    send_desktop_notification "$MESSAGE" "$NOTIFICATION_TYPE" "$CONFIG" "$DIRECTORY_NAME"
 fi
 
 # Check if audio notifications are enabled
 if [[ $(echo "$CONFIG" | jq -r '.audio.enabled') == "true" ]]; then
-    play_audio_notification "$NOTIFICATION_TYPE" "$CONFIG"
+    play_audio_notification "$NOTIFICATION_TYPE" "$CONFIG" "$DIRECTORY_NAME"
 fi
 
 exit 0

@@ -7,6 +7,7 @@ send_push_notification() {
     local message="$1"
     local notification_type="$2"
     local config="$3"
+    local directory_name="$4"
     
     # Get ntfy configuration
     local ntfy_topic=$(echo "$config" | jq -r '.push.ntfy_topic')
@@ -41,11 +42,14 @@ send_push_notification() {
             ;;
     esac
     
+    # Prefix message with directory name
+    local prefixed_message="$directory_name: $message"
+    
     # Send notification via curl
     curl -s \
         -H "Priority: $priority" \
         -H "Tags: $tags" \
         -H "Title: Claude Code" \
-        -d "$message" \
+        -d "$prefixed_message" \
         "https://${ntfy_server}/${ntfy_topic}" > /dev/null
 }

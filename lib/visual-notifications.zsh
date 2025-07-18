@@ -35,7 +35,8 @@ handle_visual_notification() {
             (sleep 3 && reset_terminal_color "$default_color") &
             ;;
         *)
-            set_terminal_color "$default_color"
+            # Use iTerm2's reset to default instead of setting a specific color
+            printf "\033]6;1;bg;*;default\a"
             echo "default" > "$STATE_FILE"
             ;;
     esac
@@ -65,7 +66,8 @@ reset_terminal_color() {
     if [[ -f "$STATE_FILE" ]]; then
         local current_state=$(cat "$STATE_FILE")
         if [[ "$current_state" == "success" ]] || [[ "$current_state" == "error" ]]; then
-            set_terminal_color "$color"
+            # Use iTerm2's reset to default instead of setting a specific color
+            printf "\033]6;1;bg;*;default\a"
             echo "default" > "$STATE_FILE"
         fi
     fi
@@ -74,8 +76,8 @@ reset_terminal_color() {
 # Manual reset function
 reset_visual_notification() {
     local config="$1"
-    local default_color=$(echo "$config" | jq -r '.visual.colors.default')
     
-    set_terminal_color "$default_color"
+    # Use iTerm2's reset to default instead of setting a specific color
+    printf "\033]6;1;bg;*;default\a"
     echo "default" > "$STATE_FILE"
 }

@@ -7,6 +7,7 @@ send_desktop_notification() {
     local message="$1"
     local notification_type="$2"
     local config="$3"
+    local directory_name="$4"
     
     # Check if terminal-notifier is installed
     if ! command -v terminal-notifier &> /dev/null; then
@@ -20,7 +21,7 @@ send_desktop_notification() {
     
     # Build notification command
     local cmd=(terminal-notifier)
-    cmd+=(-title "Claude Code")
+    cmd+=(-title "$directory_name: Claude Code")
     cmd+=(-message "$message")
     cmd+=(-group "claude-code-notifications")
     
