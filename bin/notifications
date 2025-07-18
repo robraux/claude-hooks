@@ -1,0 +1,261 @@
+#!/bin/zsh
+
+# Claude Code Notifications Control CLI
+# Manages notification settings and provides status information
+
+# Configuration file location
+CONFIG_FILE="${HOME}/.config/claude/config.json"
+
+# Get the directory where this script is located
+SCRIPT_DIR="${0:a:h}"
+PROJECT_DIR="${SCRIPT_DIR:h}"
+
+# Source visual notifications for reset function
+source "${PROJECT_DIR}/lib/visual-notifications.zsh"
+
+# Initialize config directory and file if they don't exist
+init_config() {
+    local config_dir="${HOME}/.config/claude"
+    
+    # Create config directory if it doesn't exist
+    if [[ ! -d "$config_dir" ]]; then
+        mkdir -p "$config_dir"
+    fi
+    
+    # Create visual state directory
+    if [[ ! -d "$config_dir" ]]; then
+        mkdir -p "$config_dir"
+    fi
+    
+    # Copy default config if it doesn't exist
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        cp "${PROJECT_DIR}/config/default-config.json" "$CONFIG_FILE"
+        echo "Created default config at $CONFIG_FILE"
+    fi
+}
+
+# Show current notification status
+show_status() {
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "❌ Config file not found. Run 'notifications init' first."
+        return 1
+    fi
+    
+    local config=$(cat "$CONFIG_FILE")
+    
+    echo "Notification Status:"
+    echo "==================="
+    
+    # Push notifications
+    local push_enabled=$(echo "$config" | jq -r '.push.enabled')
+    local push_topic=$(echo "$config" | jq -r '.push.ntfy_topic')
+    if [[ "$push_enabled" == "true" ]]; then
+        if [[ "$push_topic" == "REQUIRED: Set your unique topic name here" ]]; then
+            echo "Push Notifications:     ⚠️  ON (topic not configured)"
+        else
+            echo "Push Notifications:     ✅ ON"
+        fi
+    else
+        echo "Push Notifications:     ❌ OFF"
+    fi
+    
+    # Visual notifications
+    local visual_enabled=$(echo "$config" | jq -r '.visual.enabled')
+    if [[ "$visual_enabled" == "true" ]]; then
+        echo "Visual Indicators:      ✅ ON"
+    else
+        echo "Visual Indicators:      ❌ OFF"
+    fi
+    
+    # Desktop notifications
+    local desktop_enabled=$(echo "$config" | jq -r '.desktop.enabled')
+    if [[ "$desktop_enabled" == "true" ]]; then
+        echo "Desktop Notifications:  ✅ ON"
+    else
+        echo "Desktop Notifications:  ❌ OFF"
+    fi
+    
+    # Audio notifications
+    local audio_enabled=$(echo "$config" | jq -r '.audio.enabled')
+    if [[ "$audio_enabled" == "true" ]]; then
+        echo "Audio Notifications:    ✅ ON"
+    else
+        echo "Audio Notifications:    ❌ OFF"
+    fi
+}
+
+# Toggle notification type
+toggle_notification() {
+    local type="$1"
+    local state="$2"
+    
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "❌ Config file not found. Run 'notifications init' first."
+        return 1
+    fi
+    
+    local config=$(cat "$CONFIG_FILE")
+    local enabled_value
+    
+    if [[ "$state" == "on" ]]; then
+        enabled_value="true"
+    elif [[ "$state" == "off" ]]; then
+        enabled_value="false"
+    else
+        echo "❌ Invalid state. Use 'on' or 'off'."
+        return 1
+    fi
+    
+    # Update config using jq
+    local updated_config=$(echo "$config" | jq ".${type}.enabled = $enabled_value")
+    
+    if [[ $? -eq 0 ]]; then
+        echo "$updated_config" > "$CONFIG_FILE"
+        echo "✅ ${type^} notifications ${state}"
+    else
+        echo "❌ Failed to update ${type} notifications"
+        return 1
+    fi
+}
+
+# Enable all notifications
+enable_all() {
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "❌ Config file not found. Run 'notifications init' first."
+        return 1
+    fi
+    
+    local config=$(cat "$CONFIG_FILE")
+    local updated_config=$(echo "$config" | jq '.push.enabled = true | .visual.enabled = true | .desktop.enabled = true | .audio.enabled = true')
+    
+    if [[ $? -eq 0 ]]; then
+        echo "$updated_config" > "$CONFIG_FILE"
+        echo "✅ All notifications enabled"
+    else
+        echo "❌ Failed to enable all notifications"
+        return 1
+    fi
+}
+
+# Disable all notifications
+disable_all() {
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "❌ Config file not found. Run 'notifications init' first."
+        return 1
+    fi
+    
+    local config=$(cat "$CONFIG_FILE")
+    local updated_config=$(echo "$config" | jq '.push.enabled = false | .visual.enabled = false | .desktop.enabled = false | .audio.enabled = false')
+    
+    if [[ $? -eq 0 ]]; then
+        echo "$updated_config" > "$CONFIG_FILE"
+        echo "✅ All notifications disabled"
+    else
+        echo "❌ Failed to disable all notifications"
+        return 1
+    fi
+}
+
+# Reset to default settings
+reset_config() {
+    if [[ -f "$CONFIG_FILE" ]]; then
+        cp "$CONFIG_FILE" "${CONFIG_FILE}.backup"
+        echo "📋 Backed up current config to ${CONFIG_FILE}.backup"
+    fi
+    
+    cp "${PROJECT_DIR}/config/default-config.json" "$CONFIG_FILE"
+    echo "✅ Reset to default settings"
+}
+
+# Manual visual reset
+reset_visual() {
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "❌ Config file not found. Run 'notifications init' first."
+        return 1
+    fi
+    
+    local config=$(cat "$CONFIG_FILE")
+    reset_visual_notification "$config"
+    echo "✅ Visual indicators reset"
+}
+
+# Show help
+show_help() {
+    cat << EOF
+Claude Code Notifications Control
+
+Usage: notifications <command>
+
+Commands:
+  status                 Show current notification status
+  on                     Enable all notifications
+  off                    Disable all notifications
+  reset                  Reset to default settings
+  init                   Initialize config file
+  
+  push on|off           Toggle push notifications
+  visual on|off         Toggle visual indicators
+  desktop on|off        Toggle desktop notifications
+  audio on|off          Toggle audio notifications
+  
+  visual reset          Manually reset visual indicators
+  
+  help                  Show this help message
+
+Examples:
+  notifications status
+  notifications on
+  notifications push off
+  notifications visual reset
+EOF
+}
+
+# Main command handler
+case "$1" in
+    "status")
+        show_status
+        ;;
+    "on")
+        init_config
+        enable_all
+        ;;
+    "off")
+        init_config
+        disable_all
+        ;;
+    "reset")
+        init_config
+        reset_config
+        ;;
+    "init")
+        init_config
+        ;;
+    "push")
+        init_config
+        toggle_notification "push" "$2"
+        ;;
+    "visual")
+        init_config
+        if [[ "$2" == "reset" ]]; then
+            reset_visual
+        else
+            toggle_notification "visual" "$2"
+        fi
+        ;;
+    "desktop")
+        init_config
+        toggle_notification "desktop" "$2"
+        ;;
+    "audio")
+        init_config
+        toggle_notification "audio" "$2"
+        ;;
+    "help"|"-h"|"--help")
+        show_help
+        ;;
+    *)
+        echo "❌ Unknown command: $1"
+        echo "Run 'notifications help' for usage information."
+        exit 1
+        ;;
+esac

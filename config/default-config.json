@@ -1,0 +1,26 @@
+{
+  "push": {
+    "enabled": false,
+    "ntfy_topic": "REQUIRED: Set your unique topic name here",
+    "ntfy_server": "ntfy.sh"
+  },
+  "visual": {
+    "enabled": true,
+    "colors": {
+      "waiting": "#FFA500",
+      "complete_success": "#00FF00",
+      "complete_error": "#FF0000",
+      "default": "#000000"
+    }
+  },
+  "desktop": {
+    "enabled": true,
+    "sound": "default",
+    "sticky": false
+  },
+  "audio": {
+    "enabled": true,
+    "sound_file": "/System/Library/Sounds/Glass.aiff",
+    "volume": 0.5
+  }
+}
