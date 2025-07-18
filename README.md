@@ -28,11 +28,18 @@ which terminal-notifier
 ### Step 2: Download and Setup Project
 
 1. Clone or download this project to your desired location
-2. Make scripts executable:
+2. Navigate to the project directory:
    ```bash
-   chmod +x /Users/rraux/projects/claude/bin/notifications
-   chmod +x /Users/rraux/projects/claude/hooks/notification-handler.zsh
-   chmod +x /Users/rraux/projects/claude/test/test-notifications.zsh
+   cd /path/to/your/claude-notifications
+   ```
+3. Make scripts executable:
+   ```bash
+   chmod +x bin/notifications
+   chmod +x hooks/notification-handler.zsh
+   chmod +x hooks/post-tool-reset.zsh
+   chmod +x hooks/user-prompt-reset.zsh
+   chmod +x hooks/stop-handler.zsh
+   chmod +x test/test-notifications.zsh
    ```
 
 ### Step 3: Create Configuration Directory
@@ -44,9 +51,9 @@ mkdir -p ~/.config/claude
 
 ### Step 4: Copy Default Configuration
 
-Copy the default configuration file:
+Copy the default configuration file (from the project directory):
 ```bash
-cp /Users/rraux/projects/claude/config/default-config.json ~/.config/claude/config.json
+cp config/default-config.json ~/.config/claude/config.json
 ```
 
 Verify the config file was created:
@@ -72,7 +79,37 @@ Add the following JSON configuration (if the file is empty, use the entire JSON 
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/rraux/projects/claude/hooks/notification-handler.zsh"
+            "command": "$PWD/hooks/notification-handler.zsh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PWD/hooks/post-tool-reset.zsh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PWD/hooks/user-prompt-reset.zsh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PWD/hooks/stop-handler.zsh"
           }
         ]
       }
@@ -90,7 +127,37 @@ Add the following JSON configuration (if the file is empty, use the entire JSON 
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/rraux/projects/claude/hooks/notification-handler.zsh"
+            "command": "$PWD/hooks/notification-handler.zsh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PWD/hooks/post-tool-reset.zsh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PWD/hooks/user-prompt-reset.zsh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PWD/hooks/stop-handler.zsh"
           }
         ]
       }
@@ -105,13 +172,13 @@ To use the `notifications` command from anywhere, add it to your PATH:
 
 **For Zsh (default on macOS):**
 ```bash
-echo 'export PATH="/Users/rraux/projects/claude/bin:$PATH"' >> ~/.zshrc
+echo "export PATH=\"$PWD/bin:\$PATH\"" >> ~/.zshrc
 source ~/.zshrc
 ```
 
 **For Bash:**
 ```bash
-echo 'export PATH="/Users/rraux/projects/claude/bin:$PATH"' >> ~/.bashrc
+echo "export PATH=\"$PWD/bin:\$PATH\"" >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -124,7 +191,7 @@ which notifications
 
 Test the notifications command:
 ```bash
-/Users/rraux/projects/claude/bin/notifications status
+./bin/notifications status
 ```
 
 You should see output showing the current notification settings.
@@ -160,7 +227,7 @@ If you want mobile push notifications:
 
 Test all notification channels:
 ```bash
-/Users/rraux/projects/claude/test/test-notifications.zsh
+./test/test-notifications.zsh
 ```
 
 This will test visual, desktop, push, and audio notifications.
@@ -178,6 +245,11 @@ Enable/disable all notifications:
 ```bash
 ./bin/notifications on
 ./bin/notifications off
+```
+
+Initialize configuration:
+```bash
+./bin/notifications init
 ```
 
 Toggle individual notification types:
@@ -198,6 +270,11 @@ Reset to default settings:
 ./bin/notifications reset
 ```
 
+View all available commands:
+```bash
+./bin/notifications help
+```
+
 ### Visual Indicators
 
 The system changes your iTerm2 terminal color based on Claude Code's state:
@@ -205,6 +282,15 @@ The system changes your iTerm2 terminal color based on Claude Code's state:
 - **Green**: Task completed successfully (auto-resets after 3 seconds)
 - **Red**: Error occurred (auto-resets after 3 seconds)
 - **Default**: Normal operation
+
+#### Visual State Management
+The system includes intelligent state management to automatically reset visual indicators:
+- **Persistent State Tracking**: Current visual state is stored in `~/.config/claude/.visual-state`
+- **Automatic Reset**: Visual indicators reset to default when:
+  - User submits input via `UserPromptSubmit` hook
+  - User approves/denies tool use via `PostToolUse` hook (only if currently in "waiting" state)
+- **Manual Reset**: Use `./bin/notifications visual reset` to manually reset indicators
+- **Smart Detection**: The system only resets when appropriate, preserving indicators for ongoing states
 
 ### Push Notifications
 
@@ -264,27 +350,60 @@ Run the test script to verify all notification channels work:
 ```
 .
 ├── README.md                          # This file
+├── CLAUDE.md                          # Claude Code instructions
+├── notifications.md                   # Original PRD document
 ├── bin/
 │   └── notifications                  # Control CLI command
 ├── hooks/
-│   └── notification-handler.zsh       # Main hook handler
+│   ├── notification-handler.zsh       # Main notification processor
+│   ├── post-tool-reset.zsh           # Visual state reset after tool use
+│   ├── user-prompt-reset.zsh         # Visual state reset on user input
+│   └── stop-handler.zsh              # Success notification on completion
 ├── lib/
 │   ├── visual-notifications.zsh       # iTerm2 visual integration
+│   ├── visual-notifications-tab.zsh   # Tab-specific visual integration
 │   ├── push-notifications.zsh         # ntfy.sh integration
 │   ├── desktop-notifications.zsh      # macOS notifications
 │   └── audio-notifications.zsh        # Sound alerts
 ├── config/
 │   └── default-config.json           # Default configuration
-└── test/
-    └── test-notifications.zsh         # Testing utilities
+├── test/
+│   ├── test-notifications.zsh         # Full system test
+│   ├── diagnose-colors.zsh           # Color diagnostics
+│   └── test-*.zsh                    # Additional test utilities
+└── docs/
+    └── TESTING_GUIDE.md               # Testing documentation
 ```
 
 ## How It Works
 
-1. Claude Code triggers a `Notification` hook event
-2. The hook handler receives JSON data containing the notification message
-3. Based on the message content, it determines the notification type (waiting, success, error)
-4. The handler checks the configuration for enabled notification types
+The system uses multiple Claude Code hooks to provide intelligent notification management:
+
+### Hook System
+1. **Notification Hook**: Triggered when Claude Code sends notification messages
+   - Receives JSON data containing the notification message
+   - Determines notification type based on message content (waiting, success, error)
+   - Activates all enabled notification channels
+   - Sets visual state for terminal color changes
+
+2. **PostToolUse Hook**: Triggered after Claude Code tool execution
+   - Automatically resets visual indicators if currently in "waiting" state
+   - Handles cases where user approves/denies tool use without typing
+
+3. **UserPromptSubmit Hook**: Triggered when user submits input
+   - Resets visual indicators to default state
+   - Ensures clean state after user interaction
+
+4. **Stop Hook**: Triggered when Claude Code finishes responding successfully
+   - Sets terminal to green (success) color
+   - Sends completion notifications through all enabled channels
+   - Does not trigger if stopped due to user interrupt
+
+### Notification Process
+1. Claude Code triggers one of the hook events
+2. The appropriate hook handler processes the event
+3. For notifications: determines notification type and activates channels
+4. For resets: intelligently manages visual state
 5. Each enabled notification channel is triggered:
    - Visual: Changes terminal color via iTerm2 escape sequences
    - Push: Sends notification to ntfy.sh topic

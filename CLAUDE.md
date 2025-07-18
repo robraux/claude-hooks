@@ -4,49 +4,58 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Product Requirements Document (PRD) project for designing an iTerm2 Claude Code Notification System. The project contains specifications rather than implementation code.
+This is a fully implemented iTerm2 Claude Code Notification System that provides comprehensive multi-channel notifications for Claude Code processes. The system integrates with Claude Code via hooks to deliver real-time alerts when user attention is required.
 
 ## Project Structure
 
-- `notifications.md` - Main PRD document (26KB) containing:
-  - Comprehensive specifications for iTerm2 notification system
-  - Integration requirements with Claude Code hooks
-  - Multiple notification channels (push, visual, desktop, audio)
-  - Technical implementation approach
-  - Claude Code hooks reference documentation
-
+- `README.md` - Complete installation and usage guide
+- `notifications.md` - Original PRD document and technical specifications
+- `bin/notifications` - Main CLI control interface
+- `hooks/` - Claude Code hook handlers:
+  - `notification-handler.zsh` - Main notification processor
+  - `post-tool-reset.zsh` - Visual state reset after tool usage
+  - `user-prompt-reset.zsh` - Visual state reset on user input
+  - `stop-handler.zsh` - Success notification on completion
+- `lib/` - Notification implementation modules:
+  - `visual-notifications.zsh` - iTerm2 color integration
+  - `push-notifications.zsh` - ntfy.sh integration
+  - `desktop-notifications.zsh` - macOS native notifications
+  - `audio-notifications.zsh` - Sound alerts
+- `config/default-config.json` - Default configuration template
+- `test/` - Testing and diagnostic utilities
 - `.claude/settings.local.json` - Local Claude Code configuration
-  - Currently allows `ls` and `find` bash commands
-  - Permission-based security model
 
 ## Key Concepts
 
 ### Notification System Design
-The PRD describes a multi-channel notification system that would:
-1. Monitor Claude Code processes via hooks (`Notification`, `UserPromptSubmit` events)
-2. Send alerts through multiple channels (ntfy.sh push, terminal colors, desktop notifications, audio)
-3. Provide toggle controls for each notification type
-4. Integrate with iTerm2 for visual indicators
+The implemented system provides a multi-channel notification system that:
+1. Monitors Claude Code processes via multiple hooks (`Notification`, `PostToolUse`, `UserPromptSubmit`, `Stop`)
+2. Sends alerts through four channels: ntfy.sh push, iTerm2 terminal colors, macOS desktop notifications, and audio
+3. Provides granular toggle controls for each notification type
+4. Integrates with iTerm2 for intelligent visual state management
 
 ### Technical Components
-- **Hook Handler Script**: Would process Claude Code notification events
-- **Configuration Management**: JSON config at `~/.config/claude/config.json`
-- **Control Commands**: CLI interface (`notifications on|off|status`)
-- **Visual Integration**: iTerm2 escape sequences for color changes
+- **Hook Handler System**: Multiple specialized handlers for different Claude Code events
+- **Configuration Management**: JSON config at `~/.config/claude/config.json` with backup/restore
+- **Control Commands**: Full-featured CLI interface (`notifications on|off|status|reset`)
+- **Visual Integration**: iTerm2 escape sequences with automatic state reset logic
+- **State Management**: Persistent visual state tracking and intelligent reset behavior
 
 ## Development Notes
 
 When working on this project:
-1. This is a documentation/specification project - no implementation code exists yet
-2. The PRD follows a phased implementation approach (4 phases)
-3. Key dependencies would include: `jq`, `terminal-notifier`, Claude Code
-4. Manual installation approach is specified (no automated modification of existing files)
-5. Safety requirements emphasize no automatic editing of Claude Code settings
+1. This is a fully implemented system with production-ready code
+2. The system uses a modular architecture with separate libraries for each notification type
+3. Key dependencies: `jq`, `terminal-notifier`, Claude Code
+4. Installation requires manual configuration of Claude Code hooks for security
+5. The system maintains backward compatibility and includes comprehensive error handling
 
 ## Common Tasks
 
-Since this is a PRD project, common tasks include:
-- Reviewing and updating specifications in `notifications.md`
-- Planning implementation phases
-- Documenting technical requirements
-- Designing hook integration patterns
+Common development tasks include:
+- Updating notification logic in `lib/` modules
+- Enhancing hook handlers in `hooks/` directory
+- Adding new notification channels or customization options
+- Improving CLI interface in `bin/notifications`
+- Updating configuration schema in `config/default-config.json`
+- Adding tests in `test/` directory
