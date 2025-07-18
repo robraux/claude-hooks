@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/rraux/projects/claude/test/test-color-minimal.zsh"
+          }
+        ]
+      }
+    ]
+  }
+}
