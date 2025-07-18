@@ -285,7 +285,8 @@ The system changes your iTerm2 terminal color based on Claude Code's state:
 
 #### Visual State Management
 The system includes intelligent state management to automatically reset visual indicators:
-- **Persistent State Tracking**: Current visual state is stored in `~/.config/claude/.visual-state`
+- **Persistent State Tracking**: Current visual state is stored in `~/.config/claude/visual/.visual-state`
+- **State Directory**: Visual state files are kept in `~/.config/claude/visual/` for organization
 - **Automatic Reset**: Visual indicators reset to default when:
   - User submits input via `UserPromptSubmit` hook
   - User approves/denies tool use via `PostToolUse` hook (only if currently in "waiting" state)
@@ -345,6 +346,12 @@ Run the test script to verify all notification channels work:
 ./test/test-notifications.zsh
 ```
 
+For comprehensive testing and debugging, see the [Testing Guide](docs/TESTING_GUIDE.md) which includes:
+- Diagnostic utilities for troubleshooting color issues
+- Alternative implementation testing
+- Hook debugging procedures
+- Manual testing workflows
+
 ## Project Structure
 
 ```
@@ -370,7 +377,11 @@ Run the test script to verify all notification channels work:
 ├── test/
 │   ├── test-notifications.zsh         # Full system test
 │   ├── diagnose-colors.zsh           # Color diagnostics
-│   └── test-*.zsh                    # Additional test utilities
+│   ├── test-color-minimal.zsh        # Minimal color test
+│   ├── test-hook-fix.zsh             # Hook debugging test
+│   ├── test-hook-minimal.json        # Minimal hook configuration
+│   ├── test-osascript-colors.zsh     # osascript color test
+│   └── test-stop-hook.zsh            # Stop hook test
 └── docs/
     └── TESTING_GUIDE.md               # Testing documentation
 ```
@@ -427,6 +438,19 @@ The system uses multiple Claude Code hooks to provide intelligent notification m
 1. Verify your ntfy.sh topic is correctly configured
 2. Check mobile app subscription
 3. Test with curl: `curl -d "test" ntfy.sh/your-topic`
+
+### Advanced Troubleshooting
+For detailed debugging and testing procedures, see the [Testing Guide](docs/TESTING_GUIDE.md). This includes:
+- Diagnostic scripts for color change issues
+- Alternative implementation methods (osascript vs escape sequences)
+- Hook debugging techniques
+- Manual testing procedures
+
+### Debug Features
+The system includes comprehensive debug logging:
+- **Debug Log**: `~/.config/claude/notification-debug.log` - Contains detailed execution logs
+- **Visual State**: `~/.config/claude/visual/.visual-state` - Tracks current visual state
+- **Diagnostic Tools**: Run `./test/diagnose-colors.zsh` to test color functionality
 
 ## License
 
